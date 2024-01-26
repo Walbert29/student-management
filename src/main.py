@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from controllers.template import template_router
 from controllers.enrollment import enrollment_router
 from controllers.student import student_router
+from controllers.group import group_router
 
 app = FastAPI(
     title="Student Management API",
@@ -21,6 +22,9 @@ app.include_router(enrollment_router)
 
 # Student Router
 app.include_router(student_router)
+
+# Group Router
+app.include_router(group_router)
 
 
 # Exception Handlers
