@@ -21,3 +21,14 @@ class CreateGuardianSchema(BaseModel):
     document_type_id: Optional[int] = Field(alias="Guardian Identification Type (ID)")
     document_number: Optional[int] = Field(alias="Guardian Identification Number")
     country_id: Optional[int] = Field(alias="Guardian Country (Id)")
+
+
+class UpdateGuardianSchema(CreateGuardianSchema):
+    """
+    This class represents the schema for updating a guardian.
+
+    Attributes:
+        id (int): The ID of the guardian. It is a required field.
+    """
+
+    id: int = Field(alias="Guardian ID")

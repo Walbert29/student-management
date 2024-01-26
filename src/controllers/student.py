@@ -1,6 +1,10 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, UploadFile, status, File
 
-from services.student import obtain_students_by_group, obtain_students_by_room
+from services.student import (
+    obtain_students_by_group,
+    obtain_students_by_room,
+    update_data_students,
+)
 
 student_router = APIRouter(
     prefix="/student",
@@ -44,3 +48,22 @@ def get_students_by_room_id(room_id: int):
 
     """
     return obtain_students_by_room(room_id=room_id)
+
+
+@student_router.put(
+    path="/update/massive",
+    status_code=status.HTTP_200_OK,
+    summary="Update students massive",
+)
+def update_students_guardian_data(file: UploadFile = File(...)):
+    """
+    # Endpoint to update the information of a group of students and guardian by processing an Excel file containing enrollment data.
+
+    ### Args:
+        file (UploadFile): Excel file containing student/guardian data (required).
+
+    ### Returns:
+        JSONResponse:cResponse with details of updates made and not processed.
+
+    """
+    return update_data_students(file=file)

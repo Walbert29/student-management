@@ -1,14 +1,49 @@
+from fastapi import HTTPException, UploadFile, status
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
+import pandas as pd
 
 
 from crud.student import (
     create_massive_student,
+    update_massive_student,
     get_student_by_email,
+    get_student_by_id,
     get_students_by_group_id,
     get_students_by_room_id,
 )
 from database.database import create_connection
-from schemas.student import CreateMassiveStudentSchema
+from schemas.guardian import UpdateGuardianSchema
+from schemas.student import CreateMassiveStudentSchema, UpdateMassiveStudentSchema
+from services.guardian import update_guardian
+
+student_id_resonse_key = "Student ID"
+room_id_resonse_key = "Room ID"
+message_error = "Error message"
+status_response_key = "Status"
+
+
+def extract_data_from_file(file: UploadFile):
+    """
+    Extracts data from an Excel file uploaded through FastAPI's UploadFile.
+
+    Args:
+        file (UploadFile): Excel file containing enrollment data.
+
+    Returns:
+        List[Dict[str, Any]]: List of dictionaries representing records from the Excel file.
+
+    """
+    df_file_enrollment = pd.read_excel(file.file)
+
+    file_enrollment = (
+        df_file_enrollment.astype(object)
+        .where(pd.notnull(df_file_enrollment), None)
+        .to_dict(orient="records")
+    )
+
+    return file_enrollment
 
 
 def create_student(
@@ -35,6 +70,31 @@ def create_student(
         )
         return create_student.id
     return get_student.id
+
+
+def update_student(
+    session: Session, validated_student_data: UpdateMassiveStudentSchema
+):
+    """
+    Creates or retrieves a student based on the provided data.
+
+    Args:
+        session (Session): SQLAlchemy session.
+        validated_student_data (UpdateMassiveStudentSchema): Validated student data.
+        guardian_id (int): Guardian ID.
+
+    Returns:
+        StudentModel: Student Model.
+    """
+    get_student = get_student_by_id(session, validated_student_data.id)
+    if get_student:
+        update_student = update_massive_student(
+            db_session=session,
+            updated_data=validated_student_data,
+            current_student=get_student,
+        )
+        return update_student
+    return get_student
 
 
 def obtain_students_by_group(group_id: int):
@@ -69,3 +129,101 @@ def obtain_students_by_room(room_id: int):
         return get_students_by_room_id(db_session=session, room_id=room_id)
     finally:
         session.close()
+
+
+def validate_data_update(data_student):
+    """
+    Validate and transform the provided data for updating a student.
+
+    Args:
+        data_student (dict): Dictionary containing data for updating a student.
+
+    Returns:
+        tuple: A tuple containing two validated data objects - one for updating guardian information
+               and another for updating student information.
+    """
+
+    validated_guardian_data = UpdateGuardianSchema(**data_student)
+    validated_student_data = UpdateMassiveStudentSchema(**data_student)
+    return (
+        validated_guardian_data,
+        validated_student_data,
+    )
+
+
+def update_data_students(file: UploadFile):
+    """
+    Update student and guardian data from an Excel file.
+
+    Args:
+        file (UploadFile): The Excel file containing data to update.
+
+    Returns:
+        JSONResponse: A JSON response containing information about successful and failed updates.
+    """
+    if not file.filename.endswith(".xlsx"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File extension not supported",
+        )
+
+    failed_students = []
+    successful_students = []
+
+    file_data_to_update = extract_data_from_file(file)
+
+    for data in file_data_to_update:
+        try:
+            (
+                validated_guardian_data,
+                validated_student_data,
+            ) = validate_data_update(data)
+        except ValidationError as e:
+            for error in e.errors():
+                failed_students.append(
+                    {
+                        "Record": data,
+                        "Column Error": error.get("loc"),
+                        "Error message": error.get("msg"),
+                        "Value entered": error.get("input"),
+                    }
+                )
+            continue
+
+        session = create_connection()
+
+        with session.begin():
+            guardian_updated = update_guardian(session, validated_guardian_data)
+
+            if guardian_updated is None:
+                failed_students.append(
+                    {
+                        "message": f"Guardian with ID {validated_guardian_data.id} not found",
+                    }
+                )
+                continue
+
+            student_updated = update_student(session, validated_student_data)
+
+            if student_updated is None:
+                failed_students.append(
+                    {
+                        "message": f"Student with ID {validated_student_data.id} not found",
+                    }
+                )
+                continue
+
+            successful_students.append(
+                {
+                    student_id_resonse_key: student_updated.id,
+                    "message": "Data Updated",
+                }
+            )
+
+    return JSONResponse(
+        status_code=status.HTTP_207_MULTI_STATUS,
+        content={
+            "Successful users": successful_students,
+            "Failed users": failed_students,
+        },
+    )

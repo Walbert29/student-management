@@ -17,3 +17,15 @@ class CreateMassiveStudentSchema(BaseModel):
     last_name: str = Field(alias="Student Last Name")
     email: str = Field(alias="Student Email")
     guardian_id: Union[int, None] = None
+
+
+class UpdateMassiveStudentSchema(CreateMassiveStudentSchema):
+    """
+    This class represents the schema for updating a student in a massive way. It extends the BaseModel from Pydantic.
+
+    Attributes:
+        guardian_id (int): The ID of the student's guardian. It is a required field.
+    """
+
+    id: int = Field(alias="Student ID")
+    guardian_id: int = Field(alias="Guardian ID")

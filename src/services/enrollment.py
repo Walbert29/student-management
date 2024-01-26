@@ -1,6 +1,5 @@
 from fastapi import UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
-import pandas as pd
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -13,7 +12,7 @@ from schemas.enrollment import CreateMassiveEnrollmentSchema
 
 from crud.enrollment import create_enrollment, verify_room_exists, get_enrollment_by_ids
 from services.guardian import create_guardian
-from services.student import create_student
+from services.student import create_student, extract_data_from_file
 
 student_id_resonse_key = "Student ID"
 room_id_resonse_key = "Room ID"
@@ -40,30 +39,6 @@ def validate_data(enrollment):
         validated_student_data,
         validated_enrollment_data,
     )
-
-
-def extract_data_from_file(file: UploadFile):
-    """
-    Extracts data from an Excel file uploaded through FastAPI's UploadFile.
-
-    Args:
-        file (UploadFile): Excel file containing enrollment data.
-
-    Returns:
-        List[Dict[str, Any]]: List of dictionaries representing records from the Excel file.
-
-    Raises:
-        pd.errors.EmptyDataError: If the Excel file is empty or contains no data.
-    """
-    df_file_enrollment = pd.read_excel(file.file)
-
-    file_enrollment = (
-        df_file_enrollment.astype(object)
-        .where(pd.notnull(df_file_enrollment), None)
-        .to_dict(orient="records")
-    )
-
-    return file_enrollment
 
 
 def validate_enrollment(

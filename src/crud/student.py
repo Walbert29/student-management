@@ -6,7 +6,7 @@ from models.group import GroupModel
 from models.room import RoomModel
 
 from models.student import StudentModel
-from schemas.student import CreateMassiveStudentSchema
+from schemas.student import CreateMassiveStudentSchema, UpdateMassiveStudentSchema
 
 # GET
 
@@ -25,6 +25,24 @@ def get_student_by_email(db_session: Session, email: str) -> StudentModel:
     """
 
     query = db_session.query(StudentModel).filter(StudentModel.email == email).first()
+
+    return query
+
+
+def get_student_by_id(db_session: Session, student_id: int) -> StudentModel:
+    """
+    Retrieve a student from the database based on their id.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        student_id (int): Id of the student being searched.
+
+    Returns:
+        StudentModel: Instance of the Student model corresponding to the provided id,
+                      or None if no student is found with that id.
+    """
+
+    query = db_session.query(StudentModel).filter(StudentModel.id == student_id).first()
 
     return query
 
@@ -99,3 +117,30 @@ def create_massive_student(
     db_session.flush()
 
     return create_student
+
+
+# PUT
+
+
+def update_massive_student(
+    db_session: Session,
+    updated_data: UpdateMassiveStudentSchema,
+    current_student: StudentModel,
+) -> StudentModel:
+    """
+    Update student in the database.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        student (UpdateMassiveStudentSchema): Student to be updated.
+
+    Returns:
+        StudentModel: Instance of the Student model corresponding to the newly created student.
+    """
+
+    for field, value in jsonable_encoder(updated_data, by_alias=False).items():
+        setattr(current_student, field, value)
+
+    db_session.flush()
+
+    return current_student
