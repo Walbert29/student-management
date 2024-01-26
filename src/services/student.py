@@ -2,7 +2,8 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 
-from crud.student import get_student_by_email
+from crud.student import get_student_by_email, get_students_by_group_id
+from database.database import create_connection
 from models.student import StudentModel
 from schemas.student import CreateMassiveStudentSchema
 
@@ -34,3 +35,20 @@ def create_student(
         session.flush()
         return create_student.id
     return get_student.id
+
+
+def obtain_students_by_group(group_id: int):
+    """
+    Retrieves a list of students based on the provided group ID.
+
+    Args:
+        group_id (int): Group ID.
+
+    Returns:
+        list: List of students.
+    """
+    try:
+        session = create_connection()
+        return get_students_by_group_id(db_session=session, group_id=group_id)
+    finally:
+        session.close()
