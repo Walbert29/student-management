@@ -22,8 +22,6 @@ class TypeTemplates(Enum):
             "Guardian Identification Type (ID)",
             "Guardian Identification Number",
             "Guardian Country (Id)",
-            "Group ID",
-            "Course ID",
             "Room ID",
         ],
     )

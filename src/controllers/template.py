@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
 
-from services.templates import (
+from services.template import (
     list_available_templates,
     generate_template,
 )
@@ -19,11 +19,11 @@ template_router = APIRouter(
 )
 def get_list_templates():
     """
-    # Get list of available templates
+    # This function is a GET endpoint that returns a list of available templates.
+    ## It does not require any parameters.
 
     ### Returns:
-    #### JSON: ListTemplateSchema
-
+        list: A list of available templates. The structure of the templates is defined by the ListTemplateSchema.
     """
     return list_available_templates()
 
@@ -35,10 +35,12 @@ def get_list_templates():
 )
 def get_template(template_id: int) -> FileResponse:
     """
-    # Get template to be completed by id
+    # This function is a GET endpoint that returns a specific template based on the provided template_id.
+
+    ### Args:
+        template_id (int): The ID of the template to be retrieved.
 
     ### Returns:
-    #### File: xlsx file with the required structure
-
+        FileResponse: An xlsx file with the required structure.
     """
     return generate_template(template_id=template_id)

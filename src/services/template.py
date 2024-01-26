@@ -3,15 +3,15 @@ from fastapi import status, HTTPException
 from fastapi.responses import FileResponse
 
 
-from enums.templates import TypeTemplates
+from enums.template import TypeTemplates
 
 
-def list_available_templates():
+def list_available_templates() -> list:
     """
     List the templates available to use
 
     Returns:
-    - JSON: ListTemplateSchema
+        JSON: ListTemplateSchema
     """
 
     list_templates = []
@@ -30,10 +30,10 @@ def list_available_templates():
 
 def generate_template(template_id: int) -> FileResponse:
     """
-    generate the necessary template for bulk data uploading.
+    Generate the necessary template for bulk data uploading.
 
     Returns:
-    - File: xlsx file with the required structure
+        File: xlsx file with the required structure
 
     Raises:
     """

@@ -2,7 +2,9 @@ import uvicorn
 from fastapi import FastAPI, status, HTTPException
 from fastapi.responses import JSONResponse
 
-from controllers.templates import template_router
+# Controllers
+from controllers.template import template_router
+from controllers.enrollment import enrollment_router
 
 app = FastAPI(
     title="Student Management API",
@@ -10,7 +12,11 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Template Router
 app.include_router(template_router)
+
+# Enrollment Router
+app.include_router(enrollment_router)
 
 
 @app.exception_handler(Exception)

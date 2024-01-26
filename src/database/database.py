@@ -1,25 +1,35 @@
-import psycopg2
+import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 from settings import Settings
+
+Base = declarative_base()
 
 
 def create_connection():
     """
-    Function that returns the connection to the database and the cursor.
+    Establishes a connection to the PostgreSQL database and returns a session object.
 
     Returns:
-        db_connection (MySQLConnection): Database connection.
-        db_cursor (MySQLCursor): Cursor to execute queries in the database.
+        session (Session): A SQLAlchemy database session.
     """
 
-    db_connection = psycopg2.connect(
-        host=Settings.HOST_DB,
-        port=int(Settings.PORT_DB),
-        user=Settings.USERNAME_DB,
-        password=Settings.USERPASSWORD_DB,
-        database=Settings.DB_NAME,
+    # Create an SQLAlchemy engine using the provided database connection settings.
+    engine = create_engine(
+        sqlalchemy.engine.url.URL(
+            drivername="postgresql",
+            username=Settings.USERNAME_DB,
+            password=Settings.USERPASSWORD_DB,
+            host=Settings.HOST_DB,
+            port=int(Settings.PORT_DB),
+            database=Settings.DB_NAME,
+            query={},
+        ),
     )
 
-    db_cursor = db_connection.cursor()
-
-    return db_connection, db_cursor
+    # Create a session
+    session_maker = sessionmaker(bind=engine)
+    session = session_maker()
+    return session
