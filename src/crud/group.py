@@ -6,6 +6,8 @@ from models.course import CourseModel
 
 from schemas.group import CreateGroupSchema
 
+# GET
+
 
 def list_groups_with_courses(db_session: Session):
     """
@@ -25,6 +27,24 @@ def list_groups_with_courses(db_session: Session):
     )
 
     return query
+
+
+def get_group_by_id(db_session: Session, group_id: int) -> GroupModel:
+    """
+    Retrieve a group from the database based on its ID.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        group_id (int): The ID of the group to be retrieved.
+
+    Returns:
+        GroupModel: The group with the specified ID.
+    """
+
+    return db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
+
+
+# POST
 
 
 def post_group(db_session: Session, group: CreateGroupSchema) -> GroupModel:

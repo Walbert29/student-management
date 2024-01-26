@@ -5,6 +5,8 @@ from models.teacher import TeacherModel
 
 from schemas.teacher import CreateTeacherSchema
 
+# GET
+
 
 def get_teacher_by_email(db_session: Session, email: str) -> TeacherModel:
     """
@@ -22,6 +24,24 @@ def get_teacher_by_email(db_session: Session, email: str) -> TeacherModel:
     query = db_session.query(TeacherModel).filter(TeacherModel.email == email).first()
 
     return query
+
+
+def get_teacher_by_id(db_session: Session, teacher_id: int) -> TeacherModel:
+    """
+    Retrieve a teacher from the database based on its ID.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        teacher_id (int): The ID of the teacher to be retrieved.
+
+    Returns:
+        TeacherModel: The teacher with the specified ID.
+    """
+
+    return db_session.query(TeacherModel).filter(TeacherModel.id == teacher_id).first()
+
+
+# POST
 
 
 def post_teacher(db_session: Session, teacher: CreateTeacherSchema) -> TeacherModel:
