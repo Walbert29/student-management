@@ -1,14 +1,13 @@
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 
 from crud.student import (
+    create_massive_student,
     get_student_by_email,
     get_students_by_group_id,
     get_students_by_room_id,
 )
 from database.database import create_connection
-from models.student import StudentModel
 from schemas.student import CreateMassiveStudentSchema
 
 
@@ -31,12 +30,9 @@ def create_student(
     get_student = get_student_by_email(session, validated_student_data.email)
     if not get_student:
         validated_student_data.guardian_id = guardian_id
-        student_data_to_create = jsonable_encoder(
-            validated_student_data, by_alias=False
+        create_student = create_massive_student(
+            db_session=session, student=validated_student_data
         )
-        create_student = StudentModel(**student_data_to_create)
-        session.add(create_student)
-        session.flush()
         return create_student.id
     return get_student.id
 

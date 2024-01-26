@@ -1,3 +1,4 @@
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi import status
 
@@ -28,7 +29,15 @@ def create_teacher(teacher: CreateTeacherSchema):
                 },
                 status_code=status.HTTP_404_NOT_FOUND,
             )
-        return post_teacher(db_session=session, teacher=teacher)
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Data created successfully",
+                "data": jsonable_encoder(
+                    post_teacher(db_session=session, teacher=teacher)
+                ),
+            },
+        )
 
     finally:
         session.close()

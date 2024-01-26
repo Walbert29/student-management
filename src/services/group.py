@@ -1,3 +1,4 @@
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi import status
 from crud.group import list_groups_with_courses, post_group
@@ -49,7 +50,13 @@ def create_group(group: CreateGroupSchema):
                 content={"message": f"Course with ID: {group.course_id} not found"},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
-        return post_group(db_session=session, group=group)
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Data created successfully",
+                "data": jsonable_encoder(post_group(db_session=session, group=group)),
+            },
+        )
 
     finally:
         session.close()

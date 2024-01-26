@@ -1,9 +1,14 @@
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
+
 from models.enrollment import EnrollmentModel
 from models.group import GroupModel
 from models.room import RoomModel
 
 from models.student import StudentModel
+from schemas.student import CreateMassiveStudentSchema
+
+# GET
 
 
 def get_student_by_email(db_session: Session, email: str) -> StudentModel:
@@ -69,3 +74,28 @@ def get_students_by_room_id(db_session: Session, room_id: int) -> list[StudentMo
     )
 
     return query
+
+
+# POST
+
+
+def create_massive_student(
+    db_session: Session, student: CreateMassiveStudentSchema
+) -> StudentModel:
+    """
+    Create a new student in the database.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        student (CreateMassiveStudentSchema): Student to be created.
+
+    Returns:
+        StudentModel: Instance of the Student model corresponding to the newly created student.
+    """
+
+    student_data_to_create = jsonable_encoder(student, by_alias=False)
+    create_student = StudentModel(**student_data_to_create)
+    db_session.add(create_student)
+    db_session.flush()
+
+    return create_student

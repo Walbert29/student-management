@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Union
 
 
 class CreateMassiveStudentSchema(BaseModel):
@@ -16,4 +16,4 @@ class CreateMassiveStudentSchema(BaseModel):
     first_name: str = Field(alias="Student Frist name")
     last_name: str = Field(alias="Student Last Name")
     email: str = Field(alias="Student Email")
-    guardian_id: Optional[int] = Field(alias="Guardian ID")
+    guardian_id: Union[int, None] = None

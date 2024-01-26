@@ -1,9 +1,7 @@
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 
-from crud.guardian import get_guardian_by_email
-from models.guardian import GuardianModel
+from crud.guardian import create_massive_guardian, get_guardian_by_email
 from schemas.guardian import CreateGuardianSchema
 
 
@@ -20,11 +18,8 @@ def create_guardian(session: Session, validated_guardian_data: CreateGuardianSch
     """
     get_guardian = get_guardian_by_email(session, validated_guardian_data.email)
     if not get_guardian:
-        guardian_data_to_create = jsonable_encoder(
-            validated_guardian_data, by_alias=False
+        create_guardian = create_massive_guardian(
+            db_session=session, guardian=validated_guardian_data
         )
-        create_guardian = GuardianModel(**guardian_data_to_create)
-        session.add(create_guardian)
-        session.flush()
         return create_guardian.id
     return get_guardian.id

@@ -11,11 +11,9 @@ class TypeTemplates(Enum):
         "Enrollment Student",
         "Template used to make or update student enrollments",
         [
-            "Student ID",
             "Student Frist name",
             "Student Last Name",
             "Student Email",
-            "Guardian ID",
             "Guardian First Name",
             "Guardian Last Name",
             "Guardian Email",

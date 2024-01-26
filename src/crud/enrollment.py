@@ -1,9 +1,13 @@
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from models.enrollment import EnrollmentModel
 from models.room import RoomModel
 from models.group import GroupModel
+from schemas.enrollment import CreateMassiveEnrollmentSchema
+
+# GET
 
 
 def get_enrollment_by_ids(
@@ -64,3 +68,32 @@ def verify_room_exists(db_session: Session, room_id: int) -> EnrollmentModel:
     query = db_session.query(RoomModel).filter(RoomModel.id == room_id).first()
 
     return query
+
+
+# POST
+
+
+def create_enrollment(
+    session: Session,
+    validated_enrollment_data: CreateMassiveEnrollmentSchema,
+    student_id: int,
+):
+    """
+    Creates an enrollment record.
+
+    Args:
+        session (Session): SQLAlchemy session.
+        validated_enrollment_data (CreateMassiveEnrollmentSchema): Validated enrollment data.
+        student_id (int): Student ID.
+
+    Returns:
+        bool: True if enrollment creation is successful.
+    """
+    validated_enrollment_data.student_id = student_id
+    enrollment_data_to_create = jsonable_encoder(
+        validated_enrollment_data, by_alias=False
+    )
+    create_enrollment = EnrollmentModel(**enrollment_data_to_create)
+    session.add(create_enrollment)
+    session.commit()
+    return True

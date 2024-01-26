@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Union
 
 
 class CreateMassiveEnrollmentSchema(BaseModel):
@@ -11,5 +11,5 @@ class CreateMassiveEnrollmentSchema(BaseModel):
         room_id (int): Room Name.
     """
 
-    student_id: Optional[int] = Field(alias="Student ID")
+    student_id: Union[int, None] = None
     room_id: int = Field(alias="Room ID")

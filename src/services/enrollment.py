@@ -1,20 +1,17 @@
 from fastapi import UploadFile, status, HTTPException
 from fastapi.responses import JSONResponse
 import pandas as pd
-from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 
 from database.database import create_connection
 
-from models.enrollment import EnrollmentModel
-
 from schemas.guardian import CreateGuardianSchema
 from schemas.student import CreateMassiveStudentSchema
 from schemas.enrollment import CreateMassiveEnrollmentSchema
 
-from crud.enrollment import verify_room_exists, get_enrollment_by_ids
+from crud.enrollment import create_enrollment, verify_room_exists, get_enrollment_by_ids
 from services.guardian import create_guardian
 from services.student import create_student
 
@@ -117,32 +114,6 @@ def validate_enrollment(
     return True
 
 
-def create_enrollment(
-    session: Session,
-    validated_enrollment_data: CreateMassiveEnrollmentSchema,
-    student_id: int,
-):
-    """
-    Creates an enrollment record.
-
-    Args:
-        session (Session): SQLAlchemy session.
-        validated_enrollment_data (CreateMassiveEnrollmentSchema): Validated enrollment data.
-        student_id (int): Student ID.
-
-    Returns:
-        bool: True if enrollment creation is successful.
-    """
-    validated_enrollment_data.student_id = student_id
-    enrollment_data_to_create = jsonable_encoder(
-        validated_enrollment_data, by_alias=False
-    )
-    create_enrollment = EnrollmentModel(**enrollment_data_to_create)
-    session.add(create_enrollment)
-    session.commit()
-    return True
-
-
 def create_enrollment_students(file: UploadFile):
     """
     Process a file containing enrollment data and create guardian, student, and enrollment records.
@@ -176,6 +147,7 @@ def create_enrollment_students(file: UploadFile):
             for error in e.errors():
                 failed_students.append(
                     {
+                        "Record": enrollment,
                         "Column Error": error.get("loc"),
                         "Error message": error.get("msg"),
                         "Value entered": error.get("input"),
@@ -200,7 +172,7 @@ def create_enrollment_students(file: UploadFile):
                     {
                         student_id_resonse_key: student_id,
                         room_id_resonse_key: validated_enrollment_data.room_id,
-                        "status": "Successful",
+                        "Status": "Successful",
                     }
                 )
 

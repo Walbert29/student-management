@@ -1,4 +1,5 @@
 from fastapi import status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from database.database import create_connection
 
@@ -57,7 +58,13 @@ def create_room(room: CreateRoomSchema):
                 content={"message": f"Teacher with ID: {room.teacher_id} not found"},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
-        return post_room(db_session=session, room=room)
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Data created successfully",
+                "data": jsonable_encoder(post_room(db_session=session, room=room)),
+            },
+        )
 
     finally:
         session.close()
