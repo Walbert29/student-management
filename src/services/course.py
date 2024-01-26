@@ -1,7 +1,3 @@
-from fastapi import status
-from fastapi.responses import JSONResponse
-
-
 from crud.course import post_course
 from database.database import create_connection
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from models.guardian import GuardianModel
 
 
-def get_guardian_by_email(db_sesion: Session, email: str) -> GuardianModel:
+def get_guardian_by_email(db_session: Session, email: str) -> GuardianModel:
     """
     Retrieve a guardian from the database based on their email address.
 
@@ -16,6 +16,6 @@ def get_guardian_by_email(db_sesion: Session, email: str) -> GuardianModel:
                       or None if no guardian is found with that email.
     """
 
-    query = db_sesion.query(GuardianModel).filter(GuardianModel.email == email).first()
+    query = db_session.query(GuardianModel).filter(GuardianModel.email == email).first()
 
     return query

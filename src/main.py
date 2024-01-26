@@ -9,6 +9,7 @@ from controllers.student import student_router
 from controllers.group import group_router
 from controllers.room import room_router
 from controllers.course import course_router
+from controllers.teacher import teacher_router
 
 app = FastAPI(
     title="Student Management API",
@@ -33,6 +34,9 @@ app.include_router(room_router)
 
 # Course Router
 app.include_router(course_router)
+
+# Teacher Router
+app.include_router(teacher_router)
 
 
 # Exception Handlers

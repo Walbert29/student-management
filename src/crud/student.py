@@ -6,7 +6,7 @@ from models.room import RoomModel
 from models.student import StudentModel
 
 
-def get_student_by_email(db_sesion: Session, email: str) -> StudentModel:
+def get_student_by_email(db_session: Session, email: str) -> StudentModel:
     """
     Retrieve a student from the database based on their email address.
 
@@ -19,7 +19,7 @@ def get_student_by_email(db_sesion: Session, email: str) -> StudentModel:
                       or None if no student is found with that email.
     """
 
-    query = db_sesion.query(StudentModel).filter(StudentModel.email == email).first()
+    query = db_session.query(StudentModel).filter(StudentModel.email == email).first()
 
     return query
 
