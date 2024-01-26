@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from services.student import obtain_students_by_group
+from services.student import obtain_students_by_group, obtain_students_by_room
 
 student_router = APIRouter(
     prefix="/student",
@@ -8,9 +8,9 @@ student_router = APIRouter(
 )
 
 
-@student_router.post(
+@student_router.get(
     path="/group/{group_id}",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     summary="Get students by group",
 )
 def get_students_by_group_id(group_id: int):
@@ -25,3 +25,22 @@ def get_students_by_group_id(group_id: int):
 
     """
     return obtain_students_by_group(group_id=group_id)
+
+
+@student_router.get(
+    path="/room/{room_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Get students by room",
+)
+def get_students_by_room_id(room_id: int):
+    """
+    # Endpoint for retrieving a list of students based on the provided Room ID.
+
+    ### Args:
+        room_id (int): Room ID.
+
+    ### Returns:
+        JSONResponse: Response with list of students.
+
+    """
+    return obtain_students_by_room(room_id=room_id)

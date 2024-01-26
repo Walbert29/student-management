@@ -46,3 +46,26 @@ def get_students_by_group_id(db_session: Session, group_id: int) -> list[Student
     )
 
     return query
+
+
+def get_students_by_room_id(db_session: Session, room_id: int) -> list[StudentModel]:
+    """
+    Retrieve a student from the database based on their room ID assigned.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        room_id (int): Room ID of the student being searched.
+
+    Returns:
+        List[StudentModel]: List of instances of the Student model corresponding to the provided Room ID
+    """
+
+    query = (
+        db_session.query(StudentModel)
+        .join(EnrollmentModel, EnrollmentModel.student_id == StudentModel.id)
+        .join(RoomModel, RoomModel.id == EnrollmentModel.room_id)
+        .filter(RoomModel.id == room_id)
+        .all()
+    )
+
+    return query
