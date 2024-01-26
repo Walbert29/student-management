@@ -14,7 +14,7 @@ def list_groups_info():
         groups = list_groups_with_courses(db_session=session)
         list_groups = []
         for group in groups:
-            list_groups.append({"group": group[0], "course": group[1]})
+            list_groups.append({"Group": group[0], "Course": group[1]})
 
         return list_groups
 

@@ -7,6 +7,8 @@ from controllers.template import template_router
 from controllers.enrollment import enrollment_router
 from controllers.student import student_router
 from controllers.group import group_router
+from controllers.room import room_router
+from controllers.course import course_router
 
 app = FastAPI(
     title="Student Management API",
@@ -25,6 +27,12 @@ app.include_router(student_router)
 
 # Group Router
 app.include_router(group_router)
+
+# Room Router
+app.include_router(room_router)
+
+# Course Router
+app.include_router(course_router)
 
 
 # Exception Handlers
