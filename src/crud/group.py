@@ -44,6 +44,23 @@ def get_group_by_id(db_session: Session, group_id: int) -> GroupModel:
     return db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
 
 
+def get_group_by_course_id(db_session: Session, course_id: int) -> GroupModel:
+    """
+    Retrieve a group from the database based on its course ID.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        course_id (int): The ID of the course to be retrieved.
+
+    Returns:
+        GroupModel: The group with the specified course ID.
+    """
+
+    return (
+        db_session.query(GroupModel).filter(GroupModel.course_id == course_id).first()
+    )
+
+
 # POST
 
 
@@ -66,3 +83,26 @@ def post_group(db_session: Session, group: CreateGroupSchema) -> GroupModel:
     db_session.refresh(data_to_create)
 
     return data_to_create
+
+
+# DELETE
+
+
+def delete_group(db_session: Session, group_id: int) -> GroupModel:
+    """
+    Delete a group of the database.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        group_id (int): The ID of the group to be deleted.
+
+    Returns:
+        GroupModel: The group if it exists, otherwise None
+    """
+
+    group = db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
+
+    db_session.delete(group)
+    db_session.commit()
+
+    return group

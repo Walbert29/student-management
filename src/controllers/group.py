@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from services.group import list_groups_info, create_group
+from services.group import list_groups_info, create_group, remove_group
 
 from schemas.group import CreateGroupSchema
 
@@ -42,3 +42,21 @@ def post_new_group(group: CreateGroupSchema):
         dict: A dictionary containing information about the newly created group.
     """
     return create_group(group=group)
+
+
+@group_router.delete(
+    path="/delete/{group_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete Group",
+)
+def delete_group_by_id(group_id: int):
+    """
+    # Endpoint to delete a group.
+
+    ### Args:
+        group_id (int): Group ID.
+
+    ### Returns:
+        dict: A dictionary containing information about the deleted group.
+    """
+    return remove_group(group_id=group_id)

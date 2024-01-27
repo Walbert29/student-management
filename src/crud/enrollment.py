@@ -53,19 +53,25 @@ def get_enrollment_by_ids(
     return query
 
 
-def verify_room_exists(db_session: Session, room_id: int) -> EnrollmentModel:
+def get_enrollment_by_room_id(room_id: int, db_session: Session) -> EnrollmentModel:
     """
-    This function verifies if a room with a given ID exists in the database.
+    This function retrieves an enrollment record from the database based on the room ID.
 
     Args:
-        db_session (Session): The session object representing the database connection.
-        room_id (int): The ID of the room to be verified.
+        db_session (Session): SQLAlchemy database session.
+        room_id (int): ID of the room being searched.
 
     Returns:
-        EnrollmentModel: The model object representing the room if it exists, None otherwise.
+        EnrollmentModel: Instance of the Enrollment model corresponding to the provided room ID,
+                         or None if no enrollment is found with that ID.
     """
 
-    query = db_session.query(RoomModel).filter(RoomModel.id == room_id).first()
+    query = (
+        db_session.query(EnrollmentModel, RoomModel)
+        .join(RoomModel, EnrollmentModel.room_id == RoomModel.id)
+        .filter(EnrollmentModel.room_id == room_id)
+        .first()
+    )
 
     return query
 
@@ -77,7 +83,7 @@ def create_enrollment(
     session: Session,
     validated_enrollment_data: CreateMassiveEnrollmentSchema,
     student_id: int,
-):
+) -> bool:
     """
     Creates an enrollment record.
 
@@ -97,3 +103,31 @@ def create_enrollment(
     session.add(create_enrollment)
     session.commit()
     return True
+
+
+# DELETE
+
+
+def delete_enrollment(db_session: Session, enrollment_id: int) -> EnrollmentModel:
+    """
+    Delete a enrollment of the database.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        enrollment_id (int): The ID of the enrollment to be deleted.
+
+    Returns:
+        EnrollmentModel: The enrollment if it exists, otherwise None
+    """
+
+    enrollment = (
+        db_session.query(EnrollmentModel)
+        .filter(EnrollmentModel.id == enrollment_id)
+        .first()
+    )
+
+    if enrollment is not None:
+        db_session.delete(enrollment)
+        db_session.commit()
+
+    return enrollment

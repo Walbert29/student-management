@@ -1,7 +1,15 @@
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi import status
-from crud.group import list_groups_with_courses, post_group
+
+from crud.group import (
+    list_groups_with_courses,
+    post_group,
+    get_group_by_id,
+    delete_group,
+)
+from crud.room import get_room_by_group_id
+
 from database.database import create_connection
 
 from schemas.group import CreateGroupSchema
@@ -56,6 +64,50 @@ def create_group(group: CreateGroupSchema):
                 "message": "Data created successfully",
                 "data": jsonable_encoder(post_group(db_session=session, group=group)),
             },
+        )
+
+    finally:
+        session.close()
+
+
+def remove_group(group_id: int):
+    """
+    Remove a group from the database.
+
+    Args:
+        group_id (int): The ID of the group to be removed.
+
+    Returns:
+        JSONResponse: A JSONResponse if the group is not found, otherwise a JSONResponse with a message.
+    """
+    try:
+        session = create_connection()
+        group = get_group_by_id(db_session=session, group_id=group_id)
+        if not group:
+            return JSONResponse(
+                content={"message": f"Group with ID: {group_id} not found"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        verify_associed_room = get_room_by_group_id(
+            db_session=session, group_id=group_id
+        )
+        if verify_associed_room:
+            return JSONResponse(
+                content={
+                    "message": f"Group with ID: {group_id} cannot be deleted because it has associated rooms"
+                },
+                status_code=status.HTTP_409_CONFLICT,
+            )
+
+        delete_group(db_session=session, group_id=group_id)
+
+        return JSONResponse(
+            content={
+                "message": "Data deleted successfully",
+                "data": jsonable_encoder(group),
+            },
+            status_code=status.HTTP_200_OK,
         )
 
     finally:

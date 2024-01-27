@@ -5,6 +5,26 @@ from schemas.course import CreateCourseSchema
 
 from models.course import CourseModel
 
+# GET
+
+
+def validate_exist_course(db_session: Session, course_id: int):
+    """
+    Validate the existence of a course in the database.
+
+    Args:
+        db_session (Session): SQLAlchemy database session.
+        course_id (int): The ID of the course to be validated.
+
+    Returns:
+        CourseModel: The course if it exists, otherwise None
+    """
+
+    return db_session.query(CourseModel).filter(CourseModel.id == course_id).first()
+
+
+# POST
+
 
 def post_course(db_session: Session, course: CreateCourseSchema) -> CourseModel:
     """
@@ -26,16 +46,25 @@ def post_course(db_session: Session, course: CreateCourseSchema) -> CourseModel:
     return data_to_create
 
 
-def validate_exist_course(db_session: Session, course_id: int):
+# DELETE
+
+
+def delete_course(db_session: Session, course_id: int) -> CourseModel:
     """
-    Validate the existence of a course in the database.
+    Delete a course of the database.
 
     Args:
         db_session (Session): SQLAlchemy database session.
-        course_id (int): The ID of the course to be validated.
+        course_id (int): The ID of the course to be deleted.
 
     Returns:
         CourseModel: The course if it exists, otherwise None
     """
 
-    return db_session.query(CourseModel).filter(CourseModel.id == course_id).first()
+    course = db_session.query(CourseModel).filter(CourseModel.id == course_id).first()
+
+    if course is not None:
+        db_session.delete(course)
+        db_session.commit()
+
+    return course

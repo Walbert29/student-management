@@ -27,7 +27,7 @@ def create_teacher(teacher: CreateTeacherSchema):
                 content={
                     "message": f"Teacher with email: {teacher.email} already exists"
                 },
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_409_CONFLICT,
             )
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,

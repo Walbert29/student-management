@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 
 from schemas.room import CreateRoomSchema
 
-from services.room import list_rooms_info, create_room
+from services.room import list_rooms_info, create_room, remove_room
 
 room_router = APIRouter(
     prefix="/room",
@@ -42,3 +42,21 @@ def post_new_group(room: CreateRoomSchema):
         dict: A dictionary containing information about the newly created room.
     """
     return create_room(room=room)
+
+
+@room_router.delete(
+    path="/delete/{room_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete Room",
+)
+def delete_room_by_id(room_id: int):
+    """
+    # Endpoint to delete a Room.
+
+    ### Args:
+        room_id (int): Room ID.
+
+    ### Returns:
+        dict: A dictionary containing information about the deleted room.
+    """
+    return remove_room(room_id=room_id)

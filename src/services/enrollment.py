@@ -1,4 +1,5 @@
 from fastapi import UploadFile, status, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -10,7 +11,12 @@ from schemas.guardian import CreateGuardianSchema
 from schemas.student import CreateMassiveStudentSchema
 from schemas.enrollment import CreateMassiveEnrollmentSchema
 
-from crud.enrollment import create_enrollment, verify_room_exists, get_enrollment_by_ids
+from crud.enrollment import (
+    create_enrollment,
+    get_enrollment_by_ids,
+    delete_enrollment,
+)
+from crud.room import verify_room_exists
 from services.guardian import create_guardian
 from services.student import create_student, extract_data_from_file
 
@@ -45,7 +51,6 @@ def validate_enrollment(
     session: Session,
     validated_enrollment_data: CreateMassiveEnrollmentSchema,
     student_id: int,
-    failed_students: list,
 ):
     """
     Validates enrollment data and checks for room and enrollment availability.
@@ -63,13 +68,10 @@ def validate_enrollment(
         db_session=session, room_id=validated_enrollment_data.room_id
     )
     if not verify_room:
-        failed_students.append(
-            {
-                student_id_resonse_key: student_id,
-                message_error: f"Room ID: {validated_enrollment_data.room_id} does not exist",
-            }
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Room ID: {validated_enrollment_data.room_id} does not exist",
         )
-        return False
 
     verify_available_enrollment = get_enrollment_by_ids(
         db_session=session,
@@ -78,13 +80,10 @@ def validate_enrollment(
     )
 
     if verify_available_enrollment:
-        failed_students.append(
-            {
-                student_id_resonse_key: student_id,
-                message_error: f"Student already enrolled in room or group: {validated_enrollment_data.room_id}",
-            }
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Student already enrolled in room or group: {validated_enrollment_data.room_id}",
         )
-        return False
 
     return True
 
@@ -126,30 +125,49 @@ def create_enrollment_students(file: UploadFile):
                         "Column Error": error.get("loc"),
                         "Error message": error.get("msg"),
                         "Value entered": error.get("input"),
+                        "Status": "Failed",
                     }
                 )
             continue
 
-        session = create_connection()
+        try:
+            session = create_connection()
 
-        with session.begin():
-            guardian_id = create_guardian(session, validated_guardian_data)
-            student_id = create_student(session, validated_student_data, guardian_id)
-
-            if validate_enrollment(
-                session=session,
-                validated_enrollment_data=validated_enrollment_data,
-                student_id=student_id,
-                failed_students=failed_students,
-            ):
-                create_enrollment(session, validated_enrollment_data, student_id)
-                successful_students.append(
-                    {
-                        student_id_resonse_key: student_id,
-                        room_id_resonse_key: validated_enrollment_data.room_id,
-                        "Status": "Successful",
-                    }
+            with session.begin():
+                guardian_id = create_guardian(session, validated_guardian_data)
+                student_id = create_student(
+                    session, validated_student_data, guardian_id
                 )
+
+                if validate_enrollment(
+                    session=session,
+                    validated_enrollment_data=validated_enrollment_data,
+                    student_id=student_id,
+                ):
+                    create_enrollment(session, validated_enrollment_data, student_id)
+                    successful_students.append(
+                        {
+                            student_id_resonse_key: student_id,
+                            room_id_resonse_key: validated_enrollment_data.room_id,
+                            "Status": "Successful",
+                        }
+                    )
+        except HTTPException as e:
+            failed_students.append(
+                {
+                    student_id_resonse_key: student_id,
+                    message_error: e.detail,
+                    status_response_key: "Failed",
+                }
+            )
+        except Exception as e:
+            failed_students.append(
+                {
+                    "Student Data": jsonable_encoder(validated_student_data),
+                    message_error: e.args,
+                    status_response_key: "Failed",
+                }
+            )
 
     return JSONResponse(
         status_code=status.HTTP_207_MULTI_STATUS,
@@ -158,3 +176,36 @@ def create_enrollment_students(file: UploadFile):
             "Failed users": failed_students,
         },
     )
+
+
+def remove_enrollment(enrollment_id: int):
+    """
+    Removes an enrollment record.
+
+    Args:
+        enrollment_id (int): Enrollment ID.
+
+    Returns:
+        EnrollmentModel: Enrollment Model
+
+    """
+    session = create_connection()
+
+    try:
+        enrollment = delete_enrollment(session, enrollment_id)
+        if not enrollment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Enrollment with ID {enrollment_id} not found",
+            )
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Data deleted successfully",
+                "data": jsonable_encoder(enrollment),
+            },
+        )
+
+    finally:
+        session.close()

@@ -7,7 +7,8 @@ from schemas.room import CreateRoomSchema
 
 from crud.teacher import get_teacher_by_id
 from crud.group import get_group_by_id
-from crud.room import list_rooms_with_groups, post_room
+from crud.room import list_rooms_with_groups, post_room, verify_room_exists, delete_room
+from crud.enrollment import get_enrollment_by_room_id
 
 
 def list_rooms_info():
@@ -63,6 +64,54 @@ def create_room(room: CreateRoomSchema):
             content={
                 "message": "Data created successfully",
                 "data": jsonable_encoder(post_room(db_session=session, room=room)),
+            },
+        )
+
+    finally:
+        session.close()
+
+
+def remove_room(room_id: int):
+    """
+    Removes a room record.
+
+    Args:
+        room_id (int): Room ID.
+
+    Returns:
+        RoomModel: Room Model
+
+    """
+
+    try:
+        session = create_connection()
+
+        verify_room = verify_room_exists(db_session=session, room_id=room_id)
+        if not verify_room:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"message": f"Room with ID: {room_id} not found"},
+            )
+
+        verify_enrollment_with_room = get_enrollment_by_room_id(
+            room_id=room_id, db_session=session
+        )
+
+        if verify_enrollment_with_room:
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content={
+                    "message": f"Room with ID: {room_id} has enrollments associated"
+                },
+            )
+
+        delete_room(db_session=session, room_id=room_id)
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Data deleted successfully",
+                "data": jsonable_encoder(verify_room),
             },
         )
 

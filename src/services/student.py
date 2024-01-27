@@ -1,4 +1,5 @@
 from fastapi import HTTPException, UploadFile, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -186,37 +187,51 @@ def update_data_students(file: UploadFile):
                         "Column Error": error.get("loc"),
                         "Error message": error.get("msg"),
                         "Value entered": error.get("input"),
+                        "Status": "Failed",
                     }
                 )
             continue
 
-        session = create_connection()
+        try:
+            session = create_connection()
 
-        with session.begin():
-            guardian_updated = update_guardian(session, validated_guardian_data)
+            with session.begin():
+                guardian_updated = update_guardian(session, validated_guardian_data)
 
-            if guardian_updated is None:
-                failed_students.append(
+                if guardian_updated is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Guardian with ID {validated_guardian_data.id} not found",
+                    )
+
+                student_updated = update_student(session, validated_student_data)
+
+                if student_updated is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Student with ID {validated_student_data.id} not found",
+                    )
+
+                successful_students.append(
                     {
-                        "message": f"Guardian with ID {validated_guardian_data.id} not found",
+                        student_id_resonse_key: student_updated.id,
+                        "message": "Data Updated",
                     }
                 )
-                continue
-
-            student_updated = update_student(session, validated_student_data)
-
-            if student_updated is None:
-                failed_students.append(
-                    {
-                        "message": f"Student with ID {validated_student_data.id} not found",
-                    }
-                )
-                continue
-
-            successful_students.append(
+        except HTTPException as e:
+            failed_students.append(
                 {
-                    student_id_resonse_key: student_updated.id,
-                    "message": "Data Updated",
+                    student_id_resonse_key: validated_student_data,
+                    message_error: e.detail,
+                    status_response_key: "Failed",
+                }
+            )
+        except Exception as e:
+            failed_students.append(
+                {
+                    "Student Data": jsonable_encoder(validated_student_data),
+                    message_error: e.args,
+                    status_response_key: "Failed",
                 }
             )
 
