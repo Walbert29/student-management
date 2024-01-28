@@ -26,7 +26,7 @@ class TypeTemplates(Enum):
 
     UPDATE_STUDENT_GUARDIAN = (
         2,
-        "Update Data Student/Guardian",
+        "Update Data Student_Guardian",
         "Template used to update student and guardian data",
         [
             "Student ID",
