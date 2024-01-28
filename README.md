@@ -2,6 +2,10 @@
 
 This API is responsible for managing the registration of students and their guardians to the system, validating the registration of students to unique groups.
 
+The service is deployed with the Heroku cloud services platform, fully available and functional through the link:
+
+https://student-mngt-be6f990d3f2d.herokuapp.com/docs
+
 ## 🛠 Used technology
 
 - **Programming language:** Python
@@ -34,7 +38,7 @@ The development of the project follows a layer-based architecture. The code is o
 
 This Notion describes the processes and analyses carried out, as well as the respective technical documentation.
 
-https://romantic-ghoul-576.notion.site/Caso-te-cnico-Backend-Developer-Crack-The-Code-234ffe0261474b59b18ddf272a873260
+[Notion Documentation](https://romantic-ghoul-576.notion.site/Caso-te-cnico-Backend-Developer-Crack-The-Code-234ffe0261474b59b18ddf272a873260)
 
 ## ▶️ Fast configuration and execution.
 
