@@ -1,7 +1,6 @@
 import xlsxwriter
-from fastapi import status, HTTPException
+from fastapi import HTTPException, status
 from fastapi.responses import FileResponse
-
 
 from enums.template import TypeTemplates
 

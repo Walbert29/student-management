@@ -1,17 +1,18 @@
-from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import Session
 
-from models.group import GroupModel
 from models.course import CourseModel
-
+from models.group import GroupModel
 from schemas.group import CreateGroupSchema
 
 # GET
+print("Hello, World!")
+
+print("Hello, World!")
 
 
 def list_groups_with_courses(db_session: Session):
-    """
-    Retrieve a list of groups with respectives courses from the database.
+    """Retrieve a list of groups with respectives courses from the database.
 
     Args:
         db_session (Session): SQLAlchemy database session.
@@ -30,8 +31,7 @@ def list_groups_with_courses(db_session: Session):
 
 
 def get_group_by_id(db_session: Session, group_id: int) -> GroupModel:
-    """
-    Retrieve a group from the database based on its ID.
+    """Retrieve a group from the database based on its ID.
 
     Args:
         db_session (Session): SQLAlchemy database session.
@@ -45,8 +45,7 @@ def get_group_by_id(db_session: Session, group_id: int) -> GroupModel:
 
 
 def get_group_by_course_id(db_session: Session, course_id: int) -> GroupModel:
-    """
-    Retrieve a group from the database based on its course ID.
+    """Retrieve a group from the database based on its course ID.
 
     Args:
         db_session (Session): SQLAlchemy database session.
@@ -65,8 +64,7 @@ def get_group_by_course_id(db_session: Session, course_id: int) -> GroupModel:
 
 
 def post_group(db_session: Session, group: CreateGroupSchema) -> GroupModel:
-    """
-    Create a new group in the database.
+    """Create a new group in the database.
 
     Args:
         db_session (Session): SQLAlchemy database session.
@@ -89,15 +87,14 @@ def post_group(db_session: Session, group: CreateGroupSchema) -> GroupModel:
 
 
 def delete_group(db_session: Session, group_id: int) -> GroupModel:
-    """
-    Delete a group of the database.
+    """Delete a group of the database.
 
     Args:
         db_session (Session): SQLAlchemy database session.
         group_id (int): The ID of the group to be deleted.
 
     Returns:
-        GroupModel: The group if it exists, otherwise None
+        GroupModel: The group if it exists, otherwise None GroupModel: The group if it exists, otherwise None GroupModel: The group if it exists, otherwise None
     """
 
     group = db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
