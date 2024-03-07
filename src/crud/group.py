@@ -1,12 +1,12 @@
-from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import Session
 
-from models.group import GroupModel
 from models.course import CourseModel
-
+from models.group import GroupModel
 from schemas.group import CreateGroupSchema
 
 # GET
+print("Hello, World!")
 
 
 def list_groups_with_courses(db_session: Session):

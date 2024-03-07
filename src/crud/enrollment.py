@@ -1,10 +1,13 @@
+"""
+Okay
+"""
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
 from models.enrollment import EnrollmentModel
-from models.room import RoomModel
 from models.group import GroupModel
+from models.room import RoomModel
 from schemas.enrollment import CreateMassiveEnrollmentSchema
 
 # GET
@@ -14,7 +17,8 @@ def get_enrollment_by_ids(
     db_session: Session, student_id: int, room_id: int
 ) -> EnrollmentModel:
     """
-    This function retrieves an enrollment record from the database based on the student's ID and room ID.
+    This function retrieves an enrollment record from the database based
+    on the student's ID and room ID.
 
     Args:
         db_session (Session): SQLAlchemy database session.
@@ -22,8 +26,8 @@ def get_enrollment_by_ids(
         room_id (int): ID of the room being searched.
 
     Returns:
-        EnrollmentModel: Instance of the Enrollment model corresponding to the provided student ID and room ID,
-                         or None if no enrollment is found with those IDs.
+        EnrollmentModel: Instance of the Enrollment model corresponding to the provided student ID
+        and room ID or None if no enrollment is found with those IDs.
     """
 
     query = (
