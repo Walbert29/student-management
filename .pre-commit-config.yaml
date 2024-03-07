@@ -15,4 +15,4 @@ repos:
     rev: v2.3.0
     hooks:
     - id: flake8
-      args: ['--ignore=E501']
+      args: ['--ignore=E501', '--diff']
